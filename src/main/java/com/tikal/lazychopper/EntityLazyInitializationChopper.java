@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,11 +92,11 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 		try {
 			graphTraverser.traverse(node, new GraphTraverser.GraphNodeVisitor() {
 
-				private Set<Object> visited = new HashSet<Object>();
+				private Map<Integer,Object> visited = new HashMap<Integer,Object>();
 
 				@Override
-				public Set<Object> visitAndGetDescendants(Object node) throws TraverseException {
-					visited.add(node);
+				public Map<Integer,Object> visitAndGetDescendants(Object node) throws TraverseException {
+					visited.put(System.identityHashCode(node),node);
 					try {
 						return chopLazyAndReturnDescendants(node);
 					} catch (Exception e) {
@@ -107,7 +106,7 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 
 				@Override
 				public boolean isUnvisited(Object node) {
-					return !visited.contains(node);
+					return !visited.containsKey(System.identityHashCode(node));
 				}
 
 			});
@@ -117,11 +116,11 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 		}
 	}
 
-	private Set<Object> chopLazyAndReturnDescendants(Object node) throws IllegalAccessException,
+	private Map<Integer,Object> chopLazyAndReturnDescendants(Object node) throws IllegalAccessException,
 																	IllegalArgumentException, SecurityException,
 																	NoSuchFieldException {
 
-		Set<Object> descendants = new HashSet<Object>();
+		Map<Integer,Object> descendants = new HashMap<Integer,Object>();
 
 		List<Field> fields = immutableMap.get(node.getClass());
 		if (fields != null) {
@@ -150,7 +149,7 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 		getAllFields(map, nodeClass.getSuperclass(), fields);
 	}
 
-	private void chopLazyField(Object node, Set<Object> descendents, Field field) throws IllegalAccessException,
+	private void chopLazyField(Object node, Map<Integer,Object> descendents, Field field) throws IllegalAccessException,
 																					IllegalArgumentException,
 																					SecurityException,
 																					NoSuchFieldException {
@@ -182,7 +181,7 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 		field.set(node, lazyReplacement);
 	}
 
-	private void handleIntitialized(Set<Object> descendents, Object fieldVal, Object node, Field field)
+	private void handleIntitialized(Map<Integer,Object> descendents, Object fieldVal, Object node, Field field)
 																										throws SecurityException,
 																										NoSuchFieldException,
 																										IllegalArgumentException,
@@ -192,24 +191,31 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 			field.set(node, fieldVal);
 		}
 		if (fieldVal instanceof PersistentCollection) {
-			descendents.addAll((Collection<?>) ((PersistentCollection) fieldVal).getValue());
+			Collection<?> col = (Collection<?>) ((PersistentCollection) fieldVal).getValue();
+			for (Object object : col) 
+				descendents.put(System.identityHashCode(object),object);
+			
 		} else if (fieldVal instanceof HibernateProxy) {
 			Object implementation = ((HibernateProxy) fieldVal).getHibernateLazyInitializer().getImplementation();
 			field.set(node, implementation);
-			descendents.add(implementation);
+			descendents.put(System.identityHashCode(implementation),implementation);
 		} else if (fieldVal instanceof CollectionProxy) {
 			CollectionProxy collectionProxy = (CollectionProxy) fieldVal;
 			Field delegateField = CollectionProxy.class.getDeclaredField("delegate");
 			delegateField.setAccessible(true);
 			Object implementation = delegateField.get(collectionProxy);
 			field.set(node, implementation);
-			descendents.addAll(((Collection) implementation));
+			Collection col = (Collection) implementation;
+			for (Object object : col) 
+				descendents.put(System.identityHashCode(object),object);
 		} else if (fieldVal != null
 				&& (abstractEntityClass.isAssignableFrom(fieldVal.getClass()) || fieldVal.getClass()
 						.isAnnotationPresent(Chopped.class))) {
-			descendents.add(fieldVal);
+			descendents.put(System.identityHashCode(fieldVal),fieldVal);
 		} else if (fieldVal instanceof Collection) {
-			descendents.addAll((Collection<Object>) fieldVal);
+			Collection<Object> col = (Collection<Object>) fieldVal;
+			for (Object object : col) 
+				descendents.put(System.identityHashCode(object),object);
 		}
 	}
 
