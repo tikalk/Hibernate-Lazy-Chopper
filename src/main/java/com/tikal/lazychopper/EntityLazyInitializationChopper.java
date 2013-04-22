@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Hibernate;
-import org.hibernate.collection.PersistentCollection;
+import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.envers.entities.mapper.relation.lazy.proxy.CollectionProxy;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;

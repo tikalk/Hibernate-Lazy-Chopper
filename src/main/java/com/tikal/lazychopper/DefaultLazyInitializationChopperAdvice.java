@@ -2,14 +2,10 @@ package com.tikal.lazychopper;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Set;
 import java.util.Stack;
 
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.hibernate.Hibernate;
-import org.hibernate.collection.PersistentCollection;
+import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.envers.entities.mapper.relation.lazy.proxy.CollectionProxy;
 import org.hibernate.proxy.HibernateProxy;
 import org.slf4j.Logger;
