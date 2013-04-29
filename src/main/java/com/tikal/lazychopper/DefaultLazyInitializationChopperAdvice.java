@@ -8,15 +8,13 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.hibernate.collection.PersistentCollection;
 import org.hibernate.envers.entities.mapper.relation.lazy.proxy.CollectionProxy;
 import org.hibernate.proxy.HibernateProxy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * assume that each time the service returns an object
  * the chopper need to chop the relevant nodes.
  */
 public class DefaultLazyInitializationChopperAdvice implements LazyInitializationChopperAdvice {
-	private static final Logger logger = LoggerFactory.getLogger(DefaultLazyInitializationChopperAdvice.class);
+//	private static final Logger logger = LoggerFactory.getLogger(DefaultLazyInitializationChopperAdvice.class);
 
 	private static ThreadLocal<Boolean> disableChop = new ThreadLocal<Boolean>();
 	
@@ -115,6 +113,7 @@ public class DefaultLazyInitializationChopperAdvice implements LazyInitializatio
 
 	}
 
+	@SuppressWarnings("rawtypes")
 	private Object chopCollection(Object node) throws NoSuchFieldException, IllegalAccessException,
 												LazyInitializationChopperException {
 		if (node instanceof PersistentCollection) {
