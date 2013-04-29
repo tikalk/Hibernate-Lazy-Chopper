@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Stack;
 
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.hibernate.collection.spi.PersistentCollection;
+import org.hibernate.collection.PersistentCollection;
 import org.hibernate.envers.entities.mapper.relation.lazy.proxy.CollectionProxy;
 import org.hibernate.proxy.HibernateProxy;
 import org.slf4j.Logger;
