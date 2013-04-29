@@ -8,7 +8,7 @@
 	<groupId>com.tikal.lazychopper</groupId>
 	<artifactId>lazy-chopper</artifactId>
 	<name>Lazy Chopper</name>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 
 	<properties>
 		<spring.version>3.2.2.RELEASE</spring.version>
@@ -49,7 +49,19 @@
 					<wtpContextName>Root</wtpContextName>
 				</configuration>
 			</plugin>
-
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>			
 		</plugins>
 		<testResources>
 			<testResource>

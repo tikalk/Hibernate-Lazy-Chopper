@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.EmbeddedId;
+import javax.persistence.Id;
+
 import org.hibernate.Hibernate;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.envers.entities.mapper.relation.lazy.proxy.CollectionProxy;
@@ -32,6 +35,9 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 
 	// do we need to use concurrent map here
 	private Map<Class<?>, List<Field>> immutableMap;
+	
+	private Map<Class<?>, Field> classIdFieldMap;
+	
 	private GraphTraverser graphTraverser = new GraphTraverser();
 
 	private static final String RESOURCE_PATTERN = "/**/*.class";
@@ -51,6 +57,7 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 
 	public void init() throws IOException, ClassNotFoundException {
 		Map<Class<?>, List<Field>> classFieldsMap = new HashMap<Class<?>, List<Field>>();
+		Map<Class<?>, Field> classIdMap = new HashMap<Class<?>, Field>();
 		String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
 				+ ClassUtils.convertClassNameToResourcePath(modelpackage) + RESOURCE_PATTERN;
 		Resource[] resources = resourcePatternResolver.getResources(pattern);
@@ -64,13 +71,14 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 				if (clazz.isAnnotationPresent(Chopped.class) || abstractEntityClass.isAssignableFrom(clazz)
 						|| clazz.getAnnotation(javax.persistence.Embeddable.class) != null) {
 					List<Field> fields = new ArrayList<Field>();
-					getAllFields(classFieldsMap, clazz, fields);
-					classFieldsMap.put(clazz, fields);
+					getAllFields(classFieldsMap, clazz, fields, classIdMap);
+					classFieldsMap.put(clazz, fields);					
 				}
 			}
 		}
 
 		immutableMap = Collections.unmodifiableMap(classFieldsMap);
+		this.classIdFieldMap = Collections.unmodifiableMap(classIdMap);
 	}
 
 	/*
@@ -132,7 +140,8 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 		return descendants;
 	}
 
-	private void getAllFields(Map<Class<?>, List<Field>> map, Class<?> nodeClass, List<Field> fields) {
+	private void getAllFields(Map<Class<?>, List<Field>> map, Class<?> nodeClass, List<Field> fields, Map<Class<?>, Field> classIdMap) {
+		Field idField = null;
 		if (map.containsKey(nodeClass)) {
 			fields.addAll(map.get(nodeClass));
 			return;
@@ -144,9 +153,26 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 
 		for (Field fild : nodeClass.getDeclaredFields()) {
 			fields.add(fild);
+			Id idAnnotation = fild.getAnnotation(Id.class);
+			if(idAnnotation!=null) {
+				idField  = fild;
+			} else {
+				EmbeddedId embeddedIdAnnotation = fild.getAnnotation(EmbeddedId.class);
+				if(embeddedIdAnnotation!=null) {
+					idField  = fild;
+				}
+			}
 		}
 
-		getAllFields(map, nodeClass.getSuperclass(), fields);
+		Class<?> superclass = nodeClass.getSuperclass();
+		
+		getAllFields(map, superclass, fields, classIdMap);
+		
+		if(idField!= null) {
+			classIdMap.put(nodeClass, idField);
+		} else {
+			classIdMap.put(nodeClass, classIdMap.get(superclass));
+		}
 	}
 
 	private void chopLazyField(Object node, Map<Integer,Object> descendents, Field field) throws IllegalAccessException,
@@ -271,7 +297,8 @@ public class EntityLazyInitializationChopper implements LazyInitializationChoppe
 			ctor.setAccessible(true);
 			Object lazyReplacement;
 			lazyReplacement = ctor.newInstance();
-			Field idField = abstractEntityClass.getDeclaredField("id");
+			//Field idField = abstractEntityClass.getDeclaredField("id");
+			Field idField = classIdFieldMap.get(clazz);
 			idField.setAccessible(true);
 			idField.set(lazyReplacement, identifier);
 			return lazyReplacement;
