@@ -2,3 +2,7 @@ Hibernate Lazy Chopper
 ======================
 
 For a detailed walk-through and usage, please visit this blog at Tikal : http://www.tikalk.com/java/blog/chop-hibernate-lazy-associations
+
+Changes:
+1.2.1 -> update hibernate to version 4
+1.2.2 -> support for EmbeddedId that is not 'id' 
