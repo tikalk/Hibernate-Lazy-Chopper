@@ -1,15 +1,15 @@
 package com.tikal.lazychopper;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Stack;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.hibernate.collection.spi.PersistentCollection;
-import org.hibernate.envers.entities.mapper.relation.lazy.proxy.CollectionProxy;
+import org.hibernate.envers.internal.entities.mapper.relation.lazy.proxy.CollectionProxy;
 import org.hibernate.proxy.HibernateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Stack;
 
 /*
  * assume that each time the service returns an object
