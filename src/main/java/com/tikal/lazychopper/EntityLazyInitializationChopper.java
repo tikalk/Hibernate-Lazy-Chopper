@@ -1,5 +1,21 @@
 package com.tikal.lazychopper;
 
+import com.tikal.lazychopper.GraphTraverser.TraverseException;
+import org.hibernate.Hibernate;
+import org.hibernate.collection.spi.PersistentCollection;
+import org.hibernate.envers.internal.entities.mapper.relation.lazy.proxy.CollectionProxy;
+import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.proxy.LazyInitializer;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.util.ClassUtils;
+
+import javax.persistence.EmbeddedId;
+import javax.persistence.Id;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -12,24 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.persistence.EmbeddedId;
-import javax.persistence.Id;
-
-import org.hibernate.Hibernate;
-import org.hibernate.collection.spi.PersistentCollection;
-import org.hibernate.envers.entities.mapper.relation.lazy.proxy.CollectionProxy;
-import org.hibernate.proxy.HibernateProxy;
-import org.hibernate.proxy.LazyInitializer;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.util.ClassUtils;
-
-import com.tikal.lazychopper.GraphTraverser.TraverseException;
 
 public class EntityLazyInitializationChopper implements LazyInitializationChopper {
 
